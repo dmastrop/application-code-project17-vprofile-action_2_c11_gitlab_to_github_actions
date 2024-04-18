@@ -7,7 +7,10 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: vprofile.thehkh.com
+  # the vprofile.thehkh.com are the ingress rules to be applied to the nginx controller that is deployed to the EKS cluster
+  # this will be replaced with my URL and this will be the frontend to the app and nginx will then route to the tomcat server
+  #- host: vprofile.thehkh.com
+  - host: vprofile-project17.holinessinloveofchrist.com
     http:
       paths:
       - path: /
