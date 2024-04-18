@@ -3,7 +3,7 @@ on: workflow_dispatch
 # for now during testing use manual trigger
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSTIORY: project17-ecr-vprofileapp
+  ECR_REPOSITORY: project17-ecr-vprofileapp
   EKS_CLUSTER: project17-eks-vprofile
 
 jobs:
@@ -115,7 +115,7 @@ jobs:
           registry: ${{ secrets.REGISTRY }}
           # this is the URL for the ECR repository for artifact deployment to EKS
           #cache_from: ${{ secrets.cache }}
-          repo: ${{ env.ECR_REPOSTIORY }}
+          repo: ${{ env.ECR_REPOSITORY }}
           # this is the ECR repository name
           region: ${{ env.AWS_REGION }}
           tags: latest,${{ github.run_number }}
