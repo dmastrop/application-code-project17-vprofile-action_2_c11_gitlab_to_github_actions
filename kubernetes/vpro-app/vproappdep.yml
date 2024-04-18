@@ -16,6 +16,8 @@ spec:
     spec:
       containers:
       - name: vproapp
+      # will get latest tag image below. We cannot add variables here but will use helm charts as a package manager to the
+      # existing EKS k8s cluster
         image: vprofile/vprofileapp
         ports:
         - name: vproapp-port
