@@ -7,7 +7,7 @@ env:
   EKS_CLUSTER: project17-eks-vprofile
 
 jobs:
-  Testing:
+  Testing_JOB1:
     runs-on: ubuntu-latest
     # default install has maven already installed
     # The steps below are copied from the project12 workspace Sonarcode.yml file. They are the same.
@@ -97,3 +97,31 @@ jobs:
 #            -Dsonar.jacoco.reportsPath=target/jacoco.exec 
 #            -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml
 #            -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/
+
+  
+
+  ## NEW JOB
+  BUILD_AND_PUBLISH_JOB2:
+    needs: Testing
+    # Testing must complete before running this job2
+    runs-on: ubuntu-latest
+    steps:
+      - name: upload image to ECR
+      # docker ECR github marketplace actions https://github.com/marketplace/actions/docker-ecr
+        uses: appleboy/docker-ecr-action@master
+        with:
+          access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          registry: ${{ secrets.REGISTRY }}
+          # this is the URL for the ECR repository for artifact deployment to EKS
+          #cache_from: ${{ secrets.cache }}
+          repo: ${{ env.ECR_REPOSTIORY }}
+          # this is the ECR repository name
+          region: ${{ env.AWS_REGION }}
+          tags: latest,${{ github.run_number }}
+          #auto_tag: true
+          daemon_off: false
+          dockerfile: ./Dockerfile
+          # current working directory root
+          context: ./
+      
