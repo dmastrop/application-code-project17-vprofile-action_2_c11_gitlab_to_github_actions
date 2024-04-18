@@ -1,5 +1,6 @@
 name: vprofile-actions
 on: workflow_dispatch
+# for now during testing use manual trigger
 env:
   AWS_REGION: us-east-1
   ECR_REPOSTIORY: project17-ecr-vprofileapp
