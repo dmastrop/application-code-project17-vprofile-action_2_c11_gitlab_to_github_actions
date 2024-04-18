@@ -102,7 +102,7 @@ jobs:
 
   ## NEW JOB
   BUILD_AND_PUBLISH_JOB2:
-    needs: Testing
+    needs: Testing_JOB1
     # Testing must complete before running this job2
     runs-on: ubuntu-latest
     steps:
