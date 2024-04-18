@@ -119,6 +119,7 @@ jobs:
           # this is the ECR repository name
           region: ${{ env.AWS_REGION }}
           tags: latest,${{ github.run_number }}
+          # tag is latest with the github run number. This will be the build number.
           #auto_tag: true
           daemon_off: false
           dockerfile: ./Dockerfile
