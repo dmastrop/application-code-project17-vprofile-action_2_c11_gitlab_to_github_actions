@@ -106,7 +106,10 @@ jobs:
     # Testing must complete before running this job2
     runs-on: ubuntu-latest
     steps:
-      - name: upload image to ECR
+      - name: Code checkout
+        uses: actions/checkout@v4
+        
+      - name: Build and Upload image to ECR repository
       # docker ECR github marketplace actions https://github.com/marketplace/actions/docker-ecr
         uses: appleboy/docker-ecr-action@master
         with:
