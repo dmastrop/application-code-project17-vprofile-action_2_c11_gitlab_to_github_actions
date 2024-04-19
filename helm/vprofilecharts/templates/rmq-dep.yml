@@ -19,7 +19,10 @@ spec:
         image: rabbitmq
         ports:
         - name: vpromq01-port
-          containerPort: 15672
+          containerPort: 5672
+          # fixing port. The actual deployment container port is 5672
+          # this is the helm template yaml not the source directly kubernetes file.
+          #containerPort: 15672
         env: 
          - name: RABBITMQ_DEFAULT_PASS
            valueFrom:
