@@ -100,6 +100,11 @@ jobs:
 
   
 
+
+
+
+
+
   ## NEW JOB
   BUILD_AND_PUBLISH_JOB2:
     needs: Testing_JOB1
@@ -108,7 +113,7 @@ jobs:
     steps:
       - name: Code checkout
         uses: actions/checkout@v4
-        
+
       - name: Build and Upload image to ECR repository
       # docker ECR github marketplace actions https://github.com/marketplace/actions/docker-ecr
         uses: appleboy/docker-ecr-action@master
@@ -128,4 +133,80 @@ jobs:
           dockerfile: ./Dockerfile
           # current working directory root
           context: ./
+
+
+
+
+
+
+
+
+  # THIRD JOB
+  # Before using helm to set the image version and tag from ECR need to first get the kubeconfig file
+  # from the current running cluster with the following command:
+  # aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER }}
+  # this is so that the github runner executing this job can do kubectl
+  # Next need to store the ECR registry credentials so that the runner has access to the artifact on ECR
+  DEPLOY_TO_EKS_JOB3:
+    needs: BUILD_AND_PUBLISH_JOB2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+      # this source code now has the helm charts
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+      # this is the project17-k8s-EKS-user that was used to deploy the EKS cluster
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get Kube config file from k8s controller/master
+      # with aws configure above the runner can now get the kubeconfig file of the running cluster from the control node
+      # the runner will now be able to run kubectl to apply the yaml files to the cluster for application deployment
+        run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER }}
+
+      - name: Print the kubeconfig file from ~/.kube/config on the runner (set by previous step)
+        run: cat ~/.kube/config
+
+      - name: Log into ECR to fetch the current and latest image from BUILD_AND_PUBLISH_JOB2
+        run: kubectl create secret docker-registry regcred --docker-server=${{ secrets.REGISTRY }} --docker-username=AWS --docker-password=$(aws ecr get-login-password)
+        # regcred is the name of the secret. secrets.REGISTRY is the full URL of the ECR repo that i created. ECR does not give a password when created but this will get a passowrd for the ECR registry
+        # this kubernetes secret will then be used by kubectl to log into ECR to fetch the image. The correct image will use the helm chart
+        
+      - name: Deploy Helm
+        # https://github.com/marketplace/actions/deploy-helm-chart-to-aws-eks-cluster
+        # there is no need to run helm command on the runner. This will deploy our helm charts to
+        # the AWS EKS cluster that is set up based upon the yamil files that are copied into helm/vprofilecharts/templates,  
+        # noting that vproappdep.yml has dynamic version tagging to ensure latest  image from JOB2 above is deployed to the
+        # EKS cluster
+        # This is the image syntax in the vproappdep.yml file in the helm charts directory
+        # image: {{ .Values.appimage}}:{{ .Values.apptag}}
+        # appimage and apptag values are defined below.
+        uses: bitovi/github-actions-deploy-eks-helm@v1.2.9
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ AWS_REGION }}
+          cluster-name: ${{ env.EKS_CLUSTER }}
+          #cluster-role-arn: 
+          #config-files: fluent-bit/prod/values.yaml
+          chart-path: helm/vprofilecharts
+          # this is the path to the helm charts in the source code!
+          namespace: default
+          values: appimage=${{ secrets.REGISTRY }}/${{ env.ECR_REPOSITORY }},apptag=${{ github.run_number }}
+          # the first part is the full URI for the ECR, the rest will define the latest and specifc tagged image to fetch for deployment
+          # These define the appimage and apptag used in the vproappdep.yml for the deployment of the app to the running EKS cluster.
+          name: vprofile-stack
+          # the name can be any name
+          #chart-repository: https://fluent.github.io/helm-charts
+          #version: 0.20.6
+          #atomic: true
+
+
+
+
+  
       
