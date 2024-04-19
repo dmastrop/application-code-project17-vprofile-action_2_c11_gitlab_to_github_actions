@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vproapp
+  labels: 
+    app: vproapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vproapp
+  template:
+    metadata:
+      labels:
+        app: vproapp
+    spec:
+      containers:
+      - name: vproapp
+      # will get latest tag image below. We cannot add variables here but will use helm charts as a package manager to the
+      # existing EKS k8s cluster
+
+        #image: vprofile/vprofileapp
+
+        # configure the values with dynamic variable using helm charts
+        # this copy of vproappdep.yml is in the helm/vprofilecharts/templates directory
+        # appimage and apptag will be defined in the helm chart
+        # The vars can be passed via values.yaml or via helm command  in the github workflow.
+        # Example syntax: helm install vprofile-stack helm/vprofilecharts --set appimage=<value>
+        # Once we include this in the workflow the image: that is actually currently on ECR will be the one
+        # that is used to deploy the vproappdep.yml onto the EKS cluster!
+        image: {{ .Values.appimage}}:{{ .Values.apptag}}
+
+        ports:
+        - name: vproapp-port
+          containerPort: 8080
+      initContainers:
+      - name: init-mydb
+        image: busybox
+        command: ['sh', '-c', 'until nslookup vprodb.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mydb; sleep 2; done;']
+      - name: init-memcache
+        image: busybox
+        command: ['sh', '-c', 'until nslookup vprocache01.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mydb; sleep 2; done;']

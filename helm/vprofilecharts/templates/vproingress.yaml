@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vpro-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  # the vprofile.thehkh.com are the ingress rules to be applied to the nginx controller that is deployed to the EKS cluster
+  # this will be replaced with my URL and this will be the frontend to the app and nginx will then route to the tomcat server
+  #- host: vprofile.thehkh.com
+  - host: vprofile-project17.holinessinloveofchrist.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: my-app
+            port:
+              number: 8080
