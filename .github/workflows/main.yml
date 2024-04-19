@@ -1,5 +1,16 @@
 name: vprofile-actions
 on: workflow_dispatch
+
+## to do
+# on: 
+#   push:
+#     branches:
+#       - main
+
+
+
+
+
 # for now during testing use manual trigger
 env:
   AWS_REGION: us-east-1
@@ -171,10 +182,10 @@ jobs:
       - name: Print the kubeconfig file from ~/.kube/config on the runner (set by previous step)
         run: cat ~/.kube/config
 
-      - name: Log into ECR to fetch the current and latest image from BUILD_AND_PUBLISH_JOB2
-        run: kubectl create secret docker-registry regcred --docker-server=${{ secrets.REGISTRY }} --docker-username=AWS --docker-password=$(aws ecr get-login-password)
-        # regcred is the name of the secret. secrets.REGISTRY is the full URL of the ECR repo that i created. ECR does not give a password when created but this will get a passowrd for the ECR registry
-        # this kubernetes secret will then be used by kubectl to log into ECR to fetch the image. The correct image will use the helm chart
+      # - name: Log into ECR to fetch the current and latest image from BUILD_AND_PUBLISH_JOB2
+      #   run: kubectl create secret docker-registry regcred --docker-server=${{ secrets.REGISTRY }} --docker-username=AWS --docker-password=$(aws ecr get-login-password)
+      #   # regcred is the name of the secret. secrets.REGISTRY is the full URL of the ECR repo that i created. ECR does not give a password when created but this will get a passowrd for the ECR registry
+      #   # this kubernetes secret will then be used by kubectl to log into ECR to fetch the image. The correct image will use the helm chart
         
       - name: Deploy Helm
         # https://github.com/marketplace/actions/deploy-helm-chart-to-aws-eks-cluster
