@@ -1,12 +1,12 @@
 name: vprofile-actions
 
-on: workflow_dispatch
+#on: workflow_dispatch
 
-## to do
-# on: 
-#   push:
-#     branches:
-#       - main
+# to do
+on: 
+  push:
+    branches:
+      - main
 
 
 
