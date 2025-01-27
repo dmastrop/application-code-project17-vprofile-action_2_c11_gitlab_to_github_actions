@@ -1,7 +1,7 @@
 name: vprofile-actions
 
 #on: workflow_dispatch
-# test1
+# test2
 # to do
 on: 
   push:
