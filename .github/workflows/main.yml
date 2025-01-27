@@ -34,11 +34,13 @@ jobs:
         run: mvn checkstyle:checkstyle
 
       # Setup java 11 to be default (sonar-scanner requirement as of 5.x)
-      - name: Set Java 11
+      # This is failing. I think latest scanner requires java 17 LTS. Try with java17 LTS
+      - name: Set Java 11 (Try 17 since scanner is failing now with latest sonarcloud analysis)
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
-          java-version: '11'
+          #java-version: '11'
+	  java-version: '17'
 
       # Setup sonar-scanner
       - name: Setup SonarQube
