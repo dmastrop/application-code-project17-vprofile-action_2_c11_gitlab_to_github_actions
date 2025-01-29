@@ -161,12 +161,12 @@ jobs:
 
 
 
-  # THIRD JOB
-  # Before using helm to set the image version and tag from ECR need to first get the kubeconfig file
-  # from the current running cluster with the following command:
-  # aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER }}
-  # this is so that the github runner executing this job can do kubectl
-  # Next need to store the ECR registry credentials so that the runner has access to the artifact on ECR
+# THIRD JOB
+# Before using helm to set the image version and tag from ECR need to first get the kubeconfig file
+# from the current running cluster with the following command:
+# aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER }}
+# this is so that the github runner executing this job can do kubectl
+# Next need to store the ECR registry credentials so that the runner has access to the artifact on ECR
   DEPLOY_TO_EKS_JOB3:
     needs: BUILD_AND_PUBLISH_JOB2
     runs-on: ubuntu-latest
@@ -193,25 +193,25 @@ jobs:
 
       - name: Log into ECR to fetch the current and latest image from BUILD_AND_PUBLISH_JOB2
         run: kubectl create secret docker-registry regcred --docker-server=${{ secrets.REGISTRY }} --docker-username=AWS --docker-password=$(aws ecr get-login-password)
-        # regcred is the name of the secret. secrets.REGISTRY is the full URL of the ECR repo that i created. ECR does not give a password when created but this will get a passowrd for the ECR registry
-        # this kubernetes secret will then be used by kubectl to log into ECR to fetch the image. The helm chart will use
-        # this image to deploy the vproapp docker image to the tomcat server. The nginx will be used to route to the tomcat
-        # instance. Nginx listens on 80 and this tomcat on 8080.  A CNAME is required to map the nginx host to the AWS
-        # loadbalancer domain name that is hosting the tomcat server on a pod in the EKS kubernetes cluster
+      # regcred is the name of the secret. secrets.REGISTRY is the full URL of the ECR repo that i created. ECR does not give a password when created but this will get a passowrd for the ECR registry
+      # this kubernetes secret will then be used by kubectl to log into ECR to fetch the image. The helm chart will use
+      # this image to deploy the vproapp docker image to the tomcat server. The nginx will be used to route to the tomcat
+      # instance. Nginx listens on 80 and this tomcat on 8080.  A CNAME is required to map the nginx host to the AWS
+      # loadbalancer domain name that is hosting the tomcat server on a pod in the EKS kubernetes cluster
 
 
 
         
       - name: Deploy Helm
-        # https://github.com/marketplace/actions/deploy-helm-chart-to-aws-eks-cluster
-        # there is no need to run helm command on the runner. This will deploy our helm charts to
-        # the AWS EKS cluster that is set up based upon the yamil files that are copied into helm/vprofilecharts/templates,  
-        # noting that vproappdep.yml has dynamic version tagging to ensure latest  image from JOB2 above is deployed to the
-        # EKS cluster
-        # This is the image syntax in the vproappdep.yml file in the helm charts directory
-        # image: {{ .Values.appimage}}:{{ .Values.apptag}} These values are piped into this github actions helm deployer as 
-	      # indicated below 
-        # appimage and apptag values are defined below.
+      # https://github.com/marketplace/actions/deploy-helm-chart-to-aws-eks-cluster
+      # there is no need to run helm command on the runner. This will deploy our helm charts to
+      # the AWS EKS cluster that is set up based upon the yamil files that are copied into helm/vprofilecharts/templates,  
+      # noting that vproappdep.yml has dynamic version tagging to ensure latest  image from JOB2 above is deployed to the
+      # EKS cluster
+      # This is the image syntax in the vproappdep.yml file in the helm charts directory
+      # image: {{ .Values.appimage}}:{{ .Values.apptag}} These values are piped into this github actions helm deployer as 
+      # indicated below 
+      # appimage and apptag values are defined below.
         uses: bitovi/github-actions-deploy-eks-helm@v1.2.9
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
