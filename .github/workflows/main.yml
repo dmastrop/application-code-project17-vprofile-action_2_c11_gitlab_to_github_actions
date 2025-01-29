@@ -209,7 +209,7 @@ jobs:
         # EKS cluster
         # This is the image syntax in the vproappdep.yml file in the helm charts directory
         # image: {{ .Values.appimage}}:{{ .Values.apptag}} These values are piped into this github actions helm deployer as 
-	      # indicated below with "values:"
+	      # indicated below with values:
         # appimage and apptag values are defined below.
         uses: bitovi/github-actions-deploy-eks-helm@v1.2.9
         with:
