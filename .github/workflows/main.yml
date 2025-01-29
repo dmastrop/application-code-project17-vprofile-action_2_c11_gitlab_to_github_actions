@@ -193,11 +193,7 @@ jobs:
 
       - name: Log into ECR to fetch the current and latest image from BUILD_AND_PUBLISH_JOB2
         run: kubectl create secret docker-registry regcred --docker-server=${{ secrets.REGISTRY }} --docker-username=AWS --docker-password=$(aws ecr get-login-password)
-        # regcred is the name of the secret. secrets.REGISTRY is the full URL of the ECR repo that i created. ECR does not give a password when created but this will get a passowrd for the ECR registry
-        # this kubernetes secret will then be used by kubectl to log into ECR to fetch the image. The helm chart will use
-	      # this image to deploy the vproapp docker image to the tomcat server. The nginx will be used to route to the tomcat
-        # instance. Nginx listens on 80 and this tomcat on 8080.  A CNAME is required to map the nginx host to the AWS
-	      # loadbalancer domain name that is hosting the tomcat server on a pod in the EKS kubernetes cluster
+
 
 
         
