@@ -35,6 +35,8 @@ spec:
           containerPort: 8080
       initContainers:
       #these pods/containers have to be up prior to initializing the tomcat server because the tomcat server interfacres and depends on them being up for it to come up. This is Memcached and the mysql db.  Once they are initialized the tomat can come up. Since everyting is routed internally there are no endpoints required as ClusterIPs are used on the backend to connect to the various microservices
+      # these init containers just come up to run the script below in each an nslookup to check that the pod names are reachable via ClusterIP on the kubernetes network. If they are the 
+      # init containers are terminated and the tomcat pod can be fully brought up!!
       - name: init-mydb
         image: busybox
         command: ['sh', '-c', 'until nslookup vprodb.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mydb; sleep 2; done;']
