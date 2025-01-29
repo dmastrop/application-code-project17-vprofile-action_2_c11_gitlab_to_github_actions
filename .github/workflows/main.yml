@@ -35,6 +35,8 @@ jobs:
 
       # Setup java 11 to be default (sonar-scanner requirement as of 5.x)
       # This is failing. I think latest scanner requires java 17 LTS. Try with java17 LTS
+      # Note that this was because repo secret for SONAR_URL was not complete. But leave this on java17 since it works with
+      # java 17
       - name: Set Java 11 (Try 17 since scanner is failing now with latest sonarcloud analysis)
         uses: actions/setup-java@v3
         with:
@@ -131,12 +133,15 @@ jobs:
 
       - name: Build and Upload image to ECR repository
       # docker ECR github marketplace actions https://github.com/marketplace/actions/docker-ecr
+      # NOTE that this uses dockerfile ./Dockerfile to build the docker image from the src
         uses: appleboy/docker-ecr-action@master
         with:
           access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           registry: ${{ secrets.REGISTRY }}
           # this is the URL for the ECR repository for artifact deployment to EKS
+          # this is not the name of teh ECR repo. That is given by env variable above ECR_REPOSITORY and used below for repo
+          # The secrets.REGISTRY plus the ECR_REPOSITORY gives the full repository URL 
           #cache_from: ${{ secrets.cache }}
           repo: ${{ env.ECR_REPOSITORY }}
           # this is the ECR repository name
@@ -189,7 +194,10 @@ jobs:
       - name: Log into ECR to fetch the current and latest image from BUILD_AND_PUBLISH_JOB2
         run: kubectl create secret docker-registry regcred --docker-server=${{ secrets.REGISTRY }} --docker-username=AWS --docker-password=$(aws ecr get-login-password)
         # regcred is the name of the secret. secrets.REGISTRY is the full URL of the ECR repo that i created. ECR does not give a password when created but this will get a passowrd for the ECR registry
-        # this kubernetes secret will then be used by kubectl to log into ECR to fetch the image. The correct image will use the helm chart
+        # this kubernetes secret will then be used by kubectl to log into ECR to fetch the image. The helm chart will use
+	# this image to deploy the vproapp docker image to the tomcat server. The nginx will be used to route to the tomcat
+        # instance. Nginx listens on 80 and this tomcat on 8080.  A CNAME is required to map the nginx host to the AWS
+	# loadbalancer domain name that is hosting the tomcat server on a pod in the EKS kubernetes cluster
         
       - name: Deploy Helm
         # https://github.com/marketplace/actions/deploy-helm-chart-to-aws-eks-cluster
@@ -198,7 +206,8 @@ jobs:
         # noting that vproappdep.yml has dynamic version tagging to ensure latest  image from JOB2 above is deployed to the
         # EKS cluster
         # This is the image syntax in the vproappdep.yml file in the helm charts directory
-        # image: {{ .Values.appimage}}:{{ .Values.apptag}}
+        # image: {{ .Values.appimage}}:{{ .Values.apptag}} These values are piped into this github actions helm deployer as 
+	# indicated below with "values:"
         # appimage and apptag values are defined below.
         uses: bitovi/github-actions-deploy-eks-helm@v1.2.9
         with:
