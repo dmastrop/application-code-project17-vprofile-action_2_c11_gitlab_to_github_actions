@@ -198,6 +198,8 @@ jobs:
 	      # this image to deploy the vproapp docker image to the tomcat server. The nginx will be used to route to the tomcat
         # instance. Nginx listens on 80 and this tomcat on 8080.  A CNAME is required to map the nginx host to the AWS
 	      # loadbalancer domain name that is hosting the tomcat server on a pod in the EKS kubernetes cluster
+
+
         
       - name: Deploy Helm
         # https://github.com/marketplace/actions/deploy-helm-chart-to-aws-eks-cluster
@@ -207,7 +209,7 @@ jobs:
         # EKS cluster
         # This is the image syntax in the vproappdep.yml file in the helm charts directory
         # image: {{ .Values.appimage}}:{{ .Values.apptag}} These values are piped into this github actions helm deployer as 
-	# indicated below with "values:"
+	      # indicated below with "values:"
         # appimage and apptag values are defined below.
         uses: bitovi/github-actions-deploy-eks-helm@v1.2.9
         with:
